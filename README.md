@@ -1,41 +1,45 @@
 # Dockerized System Monitor
 
-A beginner-friendly DevOps project that demonstrates how to containerize a Python Flask application using Docker.
-
-The application exposes:
-
-* `/` – Main application page
-* `/health` – Health check endpoint
-
-This project is part of a Cloud & DevOps hands-on learning portfolio focused on Docker fundamentals, containerization, and application deployment.
+A multi-container Docker application that displays system information, tracks application visits using MySQL, and demonstrates Docker networking, volumes, health checks, and container orchestration with Docker Compose.
 
 ---
 
-## Project Structure
+## Project Overview
+
+This project combines a Python Flask web application with a MySQL database running in separate Docker containers.
+
+The application displays:
+
+* Hostname
+* Container IP Address
+* Operating System
+* Current Time
+* Python Version
+* Container ID
+* Application Version
+* Platform Information
+* Persistent Visit Counter
+
+The visit counter is stored in MySQL and persists across container restarts using Docker Volumes.
+
+---
+
+## Architecture
 
 ```text
-Dockerized-System-Monitor/
-│
-├── .gitignore
-├── README.md
-├── docker-compose.yml
-│
-├── app/
-│   ├── .dockerignore
-│   ├── Dockerfile
-│   ├── app.py
-│   └── requirements.txt
-│
-├── db/
-│   └── .gitkeep
-│
-└── screenshots/
-    ├── Docker_Image.png
-    ├── Docker_Output-1.png
-    ├── Docker_Output-2.png
-    ├── Docker_Ps-Logs.png
-    ├── Docker_Run.png
-    └── Dokcer_Build.png
+Browser
+   │
+   ▼
+Flask Application Container
+   │
+   ▼
+Docker Compose Network
+   │
+   ▼
+MySQL Database Container
+   │
+   ▼
+Docker Volume (Persistent Storage)
 ```
 
 ---
@@ -44,143 +48,183 @@ Dockerized-System-Monitor/
 
 * Python 3.12
 * Flask
+* MySQL 8.4
 * Docker
 * Docker Compose
-* Linux (Ubuntu WSL2)
+* Docker Volumes
+* Docker Networks
+
+---
+
+## Project Structure
+
+```text
+Dockerized-System-Monitor/
+├── README.md
+├── docker-compose.yml
+├── app
+│   ├── Dockerfile
+│   ├── app.py
+│   └── requirements.txt
+├── db
+│   └── init.sql
+└── screenshots
+```
 
 ---
 
 ## Features
 
-* Python Flask web application
-* Dockerized application deployment
-* Custom Docker image creation
-* Container lifecycle management
-* Health check endpoint
-* Docker build and run workflow
-* GitHub portfolio-ready documentation
+### Containerized Flask Application
+
+* Runs inside a Docker container
+* Displays runtime system information
+* Uses environment variables for configuration
+
+### Multi-Container Architecture
+
+* Flask application container
+* MySQL database container
+* Managed using Docker Compose
+
+### Persistent Storage
+
+* Uses Docker Named Volumes
+* Database data survives container restarts
+
+### Health Monitoring
+
+* Dedicated `/health` endpoint
+* Docker HEALTHCHECK integration
+
+### Container Networking
+
+* Automatic service discovery through Docker Compose
+* Flask communicates with MySQL using service names
+
+### Database Initialization
+
+* Automatic schema creation during container startup
+* Uses SQL initialization scripts
 
 ---
 
-## Application Endpoints
+## Database Schema
 
-### Home Page
-
-```http
-GET /
+```sql
+CREATE TABLE visits (
+    id INT PRIMARY KEY,
+    visit_count INT NOT NULL
+);
 ```
 
-Returns the main application page.
+Initial record:
 
-### Health Check
-
-```http
-GET /health
-```
-
-Returns application health status.
-
-Example:
-
-```json
-{
-  "status": "healthy"
-}
-```
-
----
-
-## Dockerfile Concepts Demonstrated
-
-### COPY
-
-Copies application files into the Docker image.
-
-```dockerfile
-COPY . .
-```
-
-### EXPOSE
-
-Documents the application port used by the container.
-
-```dockerfile
-EXPOSE 5000
-```
-
-### CMD
-
-Defines the default command executed when the container starts.
-
-```dockerfile
-CMD ["python", "app.py"]
+```sql
+INSERT INTO visits (id, visit_count)
+VALUES (1, 0);
 ```
 
 ---
 
-## Build Docker Image
+## Environment Variables
 
-Navigate to the project root directory:
+### Web Container
+
+| Variable    | Description         |
+| ----------- | ------------------- |
+| APP_VERSION | Application version |
+| DB_HOST     | MySQL hostname      |
+| DB_USER     | Database username   |
+| DB_PASSWORD | Database password   |
+| DB_NAME     | Database name       |
+
+### MySQL Container
+
+| Variable            | Description      |
+| ------------------- | ---------------- |
+| MYSQL_ROOT_PASSWORD | Root password    |
+| MYSQL_DATABASE      | Initial database |
+
+---
+
+## Build and Run
+
+Clone the repository:
 
 ```bash
+git clone https://github.com/<your-github-username>/Dockerized-System-Monitor.git
 cd Dockerized-System-Monitor
 ```
 
-Build the image:
+Start the application:
 
 ```bash
-docker build -t dockerized-system-monitor ./app
+docker compose up -d --build
 ```
 
----
-
-## Verify Image
+Verify running containers:
 
 ```bash
-docker images
+docker compose ps
 ```
 
----
-
-## Run Container
-
-```bash
-docker run -d \
--p 5000:5000 \
---name monitor-app \
-dockerized-system-monitor
-```
-
----
-
-## Verify Running Container
-
-```bash
-docker ps
-```
-
----
-
-## View Container Logs
-
-```bash
-docker logs monitor-app
-```
-
----
-
-## Access Application
-
-Home Page:
+Access the application:
 
 ```text
 http://localhost:5000
 ```
 
-Health Endpoint:
+Health endpoint:
 
 ```text
 http://localhost:5000/health
+```
+
+---
+
+## Useful Commands
+
+### View Running Containers
+
+```bash
+docker ps
+```
+
+### View Docker Compose Status
+
+```bash
+docker compose ps
+```
+
+### View Logs
+
+```bash
+docker compose logs -f
+```
+
+### Stop Containers
+
+```bash
+docker compose down
+```
+
+### Remove Containers and Volumes
+
+```bash
+docker compose down -v
+```
+
+### Inspect Volume
+
+```bash
+docker volume inspect dockerized-system-monitor_mysql_data
+```
+
+### Inspect Network
+
+```bash
+docker network inspect dockerized-system-monitor_default
 ```
 
 ---
@@ -189,7 +233,7 @@ http://localhost:5000/health
 
 ### Docker Build
 
-![Docker Build](screenshots/Dokcer_Build.png)
+![Docker Build](screenshots/Docker_Build.png)
 
 ### Docker Image
 
@@ -199,43 +243,73 @@ http://localhost:5000/health
 
 ![Docker Run](screenshots/Docker_Run.png)
 
-### Docker PS and Logs
+### Application Output
 
-![Docker PS and Logs](screenshots/Docker_Ps-Logs.png)
+![Application Output 1](screenshots/Docker_Output-1.png)
 
-### Application Output (/)
+![Application Output 2](screenshots/Docker_Output-2.png)
 
-![Application Output](screenshots/Docker_Output-1.png)
+### Docker Logs and Status
 
-### Health Endpoint (/health)
+![Docker Logs](screenshots/Docker_Ps-Logs.png)
 
-![Health Endpoint](screenshots/Docker_Output-2.png)
+### Docker Compose Services
+
+![Docker Compose PS](screenshots/DockerCompose_Ps.png)
+
+### Docker Compose Logs
+
+![Docker Compose Logs](screenshots/DockerCompose_Logs.png)
+
+### Application Dashboard
+
+![Dashboard](screenshots/Application_Dashboard.png)
+
+### Health Endpoint
+
+![Health Endpoint](screenshots/Health_Endpoint.png)
+
+### Docker Volume
+
+![Docker Volume](screenshots/DockerVolume_Inspect.png)
+
+### Docker Network
+
+![Docker Network](screenshots/DockerNetwork_Inspect.png)
+
+### Volume Persistence
+
+![Volume Persistence](screenshots/Volume_Persistence.png)
 
 ---
 
 ## Learning Outcomes
 
-Through this project, I gained hands-on experience with:
+Through this project I gained hands-on experience with:
 
-* Creating Docker images
-* Building custom Dockerfiles
-* Running and managing containers
-* Port mapping
-* Flask application deployment
-* Docker troubleshooting
-* Linux command-line operations
-* Git and GitHub project management
+* Docker Image Creation
+* Dockerfile Best Practices
+* Container Lifecycle Management
+* Docker Compose
+* Docker Networking
+* Docker Volumes
+* Environment Variables
+* MySQL Containerization
+* Health Checks
+* Multi-Container Applications
+* Persistent Storage Management
 
 ---
 
-## Future Enhancements
+## Future Improvements
 
-* Add MySQL database integration
-* Implement Docker Compose multi-container deployment
-* Add persistent storage using volumes
-* Add environment variable management
-* Deploy on AWS EC2
+* Deploy to AWS EC2
+* Add Nginx Reverse Proxy
+* Add Prometheus Monitoring
+* Add Grafana Dashboard
 * Implement CI/CD using GitHub Actions
+* Push Docker Images to Docker Hub
+* Deploy on Kubernetes
 
 ---
 
@@ -243,5 +317,4 @@ Through this project, I gained hands-on experience with:
 
 Kashyap Kurani
 
-Cloud & DevOps Learning Portfolio Project
-
+Cloud | DevOps | AWS Engineer Learning Portfolio
