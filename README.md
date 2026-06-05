@@ -60,15 +60,30 @@ Docker Volume (Persistent Storage)
 
 ```text
 Dockerized-System-Monitor/
+├── .gitignore
 ├── README.md
-├── docker-compose.yml
 ├── app
-│   ├── Dockerfile
-│   ├── app.py
-│   └── requirements.txt
+│   ├── .dockerignore
+│   ├── Dockerfile
+│   ├── app.py
+│   └── requirements.txt
 ├── db
-│   └── init.sql
+│   └── init.sql
+├── docker-compose.yml
 └── screenshots
+    ├── Application_Dashboard.png
+    ├── DockerCompose_Logs.png
+    ├── DockerCompose_Ps.png
+    ├── DockerNetwork_Inspect.png
+    ├── DockerVolume_Inspect.png
+    ├── Docker_Build.png
+    ├── Docker_Image.png
+    ├── Docker_Output-1.png
+    ├── Docker_Output-2.png
+    ├── Docker_Ps-Logs.png
+    ├── Docker_Run.png
+    ├── Health_Endpoint.png
+    └── Volume_Persistence.png
 ```
 
 ---
